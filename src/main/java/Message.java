@@ -8,6 +8,6 @@ public class Message {
 
     private final int id = idCounter.getAndIncrement();
 
-    private final User author;
+    private final int userId;
     private final String text;
 }
