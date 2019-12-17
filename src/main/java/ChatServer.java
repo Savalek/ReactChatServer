@@ -4,10 +4,8 @@ import io.javalin.Javalin;
 import io.javalin.http.Context;
 import lombok.SneakyThrows;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import javax.servlet.http.HttpServletResponse;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class ChatServer {
@@ -57,8 +55,22 @@ public class ChatServer {
         app.put("/message", ctx -> messages.add(ctx.bodyAsClass(Message.class)));
 
         app.get("/users", ctx -> ctx.json(users.values()));
+        app.post("/users/getUserIdByName", ChatServer::getUserIdByName);
+
         app.get("/user/:id", ChatServer::getUserById);
         app.put("/user", ChatServer::addNewUser);
+    }
+
+    private static void getUserIdByName(Context ctx) {
+        String name = ctx.body();
+        Optional<User> user = users.values().stream()
+                .filter(u -> u.getName().equals(name))
+                .findAny();
+        if (user.isPresent()) {
+            ctx.json(user.get().getId());
+        } else {
+            ctx.status(HttpServletResponse.SC_NOT_FOUND);
+        }
     }
 
     private static void getUserById(Context ctx) {
@@ -67,11 +79,20 @@ public class ChatServer {
     }
 
     private static void addNewUser(Context ctx) {
-        JsonObject json = (JsonObject) new Gson().toJsonTree(ctx.body());
+        JsonObject json = new Gson().fromJson(ctx.body(), JsonObject.class);
         String name = json.get("name").getAsString();
         String color = json.get("color").getAsString();
         User user = new User(name, color);
+        checkUser(user);
         users.put(user.getId(), user);
-        ctx.json(user);
+        ctx.json(user.getId());
+    }
+
+    private static void checkUser(User user) {
+        for (User value : users.values()) {
+            if (value.getName().equals(user.getName())) {
+                throw new IllegalArgumentException("User with name '" + user.getName() + "' already exists");
+            }
+        }
     }
 }
