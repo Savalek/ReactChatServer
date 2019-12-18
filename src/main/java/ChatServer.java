@@ -3,6 +3,7 @@ import com.google.gson.JsonObject;
 import io.javalin.Javalin;
 import io.javalin.http.Context;
 import lombok.SneakyThrows;
+import org.eclipse.jetty.http.HttpStatus;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.*;
@@ -75,6 +76,9 @@ public class ChatServer {
 
     private static void getUserById(Context ctx) {
         int id = Integer.parseInt(ctx.pathParam("id"));
+        if (!users.containsKey(id)) {
+            new ErrorTrigger(HttpStatus.NOT_FOUND_404, "User with id '" + id + "' does not exist.").doThrow();
+        }
         ctx.json(users.get(id));
     }
 
@@ -91,7 +95,7 @@ public class ChatServer {
     private static void checkUser(User user) {
         for (User value : users.values()) {
             if (value.getName().equals(user.getName())) {
-                throw new IllegalArgumentException("User with name '" + user.getName() + "' already exists");
+                new ErrorTrigger(HttpStatus.CONFLICT_409, "User with name '" + user.getName() + "' already exists").doThrow();
             }
         }
     }
