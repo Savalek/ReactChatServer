@@ -5,7 +5,6 @@ import io.javalin.http.Context;
 import lombok.SneakyThrows;
 import org.eclipse.jetty.http.HttpStatus;
 
-import javax.servlet.http.HttpServletResponse;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -21,12 +20,10 @@ public class ChatServer {
 
 
     private static final List<Message> messages = new ArrayList<Message>() {{
-        add(new Message(SAVALEK.getId(), "Hello, Lika!"));
-        add(new Message(LIKA.getId(), "Hello, Savalek!"));
-        add(new Message(SAVALEK.getId(), "How are you?"));
-        add(new Message(LIKA.getId(), "I'm fine. how are you?"));
-        add(new Message(SAVALEK.getId(), "Me too"));
-        add(new Message(LIKA.getId(), "."));
+//        add(new Message(SAVALEK.getId(), "Hello, Lika!"));
+//        add(new Message(LIKA.getId(), "Hello, Savalek!"));
+//        add(new Message(SAVALEK.getId(), "How are you?"));
+//        add(new Message(LIKA.getId(), "I'm fine. how are you?"));
     }};
 
     static {
@@ -53,13 +50,32 @@ public class ChatServer {
         }).start(7000);
 
         app.get("/messages", ctx -> ctx.json(messages));
-        app.put("/message", ctx -> messages.add(ctx.bodyAsClass(Message.class)));
+        app.put("/message", ChatServer::addNewMessage);
 
         app.get("/users", ctx -> ctx.json(users.values()));
         app.post("/users/getUserIdByName", ChatServer::getUserIdByName);
 
         app.get("/user/:id", ChatServer::getUserById);
         app.put("/user", ChatServer::addNewUser);
+    }
+
+    private static void addNewMessage(Context ctx) {
+        JsonObject json = new Gson().fromJson(ctx.body(), JsonObject.class);
+        int userId = Integer.parseInt(json.get("userId").getAsString());
+        String text = json.get("text").getAsString();
+        checkUserId(userId);
+        Message message = new Message(userId, text);
+        messages.add(message);
+        ctx.json(message.getId());
+    }
+
+    private static void checkUserId(int userId) {
+        for (User user : users.values()) {
+            if (user.getId() == userId) {
+                return;
+            }
+        }
+        new ErrorTrigger(HttpStatus.NOT_FOUND_404, "User with id '" + userId + "' does not exist.").doThrow();
     }
 
     private static void getUserIdByName(Context ctx) {
@@ -70,7 +86,7 @@ public class ChatServer {
         if (user.isPresent()) {
             ctx.json(user.get().getId());
         } else {
-            ctx.status(HttpServletResponse.SC_NOT_FOUND);
+            new ErrorTrigger(HttpStatus.NOT_FOUND_404, "User with name '" + name + "' does not exist.").doThrow();
         }
     }
 
