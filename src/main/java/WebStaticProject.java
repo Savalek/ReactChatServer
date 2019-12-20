@@ -15,6 +15,7 @@ public class WebStaticProject {
         return new File(folderPath).getAbsolutePath();
     }
 
+    @SneakyThrows
     public void cloneMasterTo() {
         File webDir = new File(folderPath);
         if (!webDir.exists()) {
@@ -23,7 +24,7 @@ public class WebStaticProject {
             }
         }
         try (Git git = getGit(webDir)) {
-            git.pull();
+            git.pull().call();
         }
     }
 
