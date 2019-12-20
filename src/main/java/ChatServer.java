@@ -2,6 +2,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import io.javalin.Javalin;
 import io.javalin.http.Context;
+import io.javalin.http.staticfiles.Location;
 import lombok.SneakyThrows;
 import org.eclipse.jetty.http.HttpStatus;
 
@@ -14,8 +15,8 @@ public class ChatServer {
     private static final User LIKA = new User("Lika", "#b400b3");
 
     private static final Map<Integer, User> users = new HashMap<Integer, User>() {{
-        put(SAVALEK.getId(), SAVALEK);
-        put(LIKA.getId(), LIKA);
+//        put(SAVALEK.getId(), SAVALEK);
+//        put(LIKA.getId(), LIKA);
     }};
 
 
@@ -26,27 +27,28 @@ public class ChatServer {
 //        add(new Message(LIKA.getId(), "I'm fine. how are you?"));
     }};
 
-    static {
-        new Thread(ChatServer::printLog).start();
-    }
-
     @SneakyThrows
     private static void printLog() {
-        Thread.sleep(2000);
         while (true) {
             String userNameList = users.values()
                     .stream()
                     .map(User::getName)
                     .collect(Collectors.joining(", "));
             System.out.printf("\rMsg count: %5d. Users: %s", messages.size(), userNameList);
-            Thread.sleep(250);
+            Thread.sleep(1000);
         }
     }
 
     public static void main(String[] args) {
+        System.out.println("Init web");
+        WebStaticProject webStaticProject = new WebStaticProject("https://github.com/Savalek/ReactLearn", "./web");
+        webStaticProject.cloneMasterTo();
+        System.out.println("Web loaded");
+
         Javalin app = Javalin.create(config -> {
             config.defaultContentType = "application/json";
             config.enableCorsForAllOrigins();
+            config.addStaticFiles(webStaticProject.getAbsolutePath() + "/Chat", Location.EXTERNAL);
         }).start(7000);
 
         app.get("/messages", ctx -> ctx.json(messages));
@@ -57,6 +59,8 @@ public class ChatServer {
 
         app.get("/user/:id", ChatServer::getUserById);
         app.put("/user", ChatServer::addNewUser);
+
+        new Thread(ChatServer::printLog).start();
     }
 
     private static void addNewMessage(Context ctx) {
