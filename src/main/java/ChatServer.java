@@ -49,7 +49,7 @@ public class ChatServer {
             config.defaultContentType = "application/json";
             config.enableCorsForAllOrigins();
             config.addStaticFiles(webStaticProject.getAbsolutePath() + "/Chat", Location.EXTERNAL);
-        }).start(7000);
+        }).start(80);
 
         app.get("/messages", ctx -> ctx.json(messages));
         app.put("/message", ChatServer::addNewMessage);
