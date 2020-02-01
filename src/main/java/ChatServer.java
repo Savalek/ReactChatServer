@@ -11,12 +11,12 @@ import java.util.stream.Collectors;
 
 public class ChatServer {
 
-//    private static final User SAVALEK = new User("Savalek", "#000c84");
-//    private static final User LIKA = new User("Lika", "#b400b3");
+    private static final User SAVALEK = new User("Savalek", "#000c84");
+    private static final User LIKA = new User("Lika", "#b400b3");
 
     private static final Map<Integer, User> users = new HashMap<Integer, User>() {{
-//        put(SAVALEK.getId(), SAVALEK);
-//        put(LIKA.getId(), LIKA);
+        put(SAVALEK.getId(), SAVALEK);
+        put(LIKA.getId(), LIKA);
     }};
 
 
@@ -49,7 +49,7 @@ public class ChatServer {
             config.defaultContentType = "application/json";
             config.enableCorsForAllOrigins();
             config.addStaticFiles(webStaticProject.getAbsolutePath() + "/Chat", Location.EXTERNAL);
-        }).start(80);
+        }).start(7000);
 
         app.get("/messages", ctx -> ctx.json(messages));
         app.put("/message", ChatServer::addNewMessage);
