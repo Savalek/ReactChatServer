@@ -41,14 +41,14 @@ public class ChatServer {
 
     public static void main(String[] args) {
         System.out.println("Init web");
-        WebStaticProject webStaticProject = new WebStaticProject("https://github.com/Savalek/ReactLearn", "./web");
-        webStaticProject.cloneMasterTo();
+        WebStaticProject webStaticProject = new WebStaticProject("https://github.com/Savalek/ReactChat", "./web");
+        webStaticProject.buildWebProject();
         System.out.println("Web loaded");
 
         Javalin app = Javalin.create(config -> {
             config.defaultContentType = "application/json";
             config.enableCorsForAllOrigins();
-            config.addStaticFiles(webStaticProject.getAbsolutePath() + "/Chat", Location.EXTERNAL);
+            config.addStaticFiles(webStaticProject.getStaticFilesFolderPath(), Location.EXTERNAL);
         }).start(7000);
 
         app.get("/messages", ctx -> ctx.json(messages));
