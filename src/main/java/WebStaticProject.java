@@ -20,11 +20,11 @@ public class WebStaticProject {
     @SneakyThrows
     public void buildWebProject() {
         File webDir = new File(folderPath);
-        deleteDirectoryStream(webDir.toPath());
-        if (!webDir.exists()) {
-            if (!webDir.mkdirs()) {
-                throw new RuntimeException("Can't create dirs for web static files");
-            }
+        if (webDir.exists()) {
+            deleteDirectoryStream(webDir.toPath());
+        }
+        if (!webDir.mkdirs()) {
+            throw new RuntimeException("Can't create dirs for web static files");
         }
         try (Git git = getGit(webDir)) {
             git.pull().call();
